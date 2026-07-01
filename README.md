@@ -15,6 +15,8 @@
   <a href="assets/demo.mp4"><img src="https://img.shields.io/badge/▶️_Watch-Demo-FF0000?style=for-the-badge" alt="Watch the demo"></a>
 </p>
 
+https://github.com/user-attachments/assets/ca662a98-2d5f-4217-9d0c-c2061325597e
+
 No browser tab. No copy-paste into a translator and back. No app allow-list. Type your message anywhere — Slack, email, a game chat, a form — press your hotkey (**Ctrl+Shift+Z** by default, fully remappable), and it's translated right there in the same box. Your clipboard is untouched afterward.
 
 <p align="center">
