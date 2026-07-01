@@ -1,5 +1,7 @@
 <p align="right">
-  <a href="README.ru.md"><b>🇷🇺 Читать на русском</b></a>
+  <a href="README.md"><img src="https://img.shields.io/badge/EN-English-0078D4?style=for-the-badge" alt="English"></a>
+  &nbsp;
+  <a href="README.ru.md"><img src="https://img.shields.io/badge/RU-Русский-CC0000?style=for-the-badge" alt="Русский"></a>
 </p>
 
 <h1 align="center">
@@ -10,7 +12,7 @@
 <p align="center"><b>Type in any language. Hit a hotkey. It's translated — in place, instantly.</b></p>
 
 <p align="center">
-  <a href="assets/demo.mov">🎥 Watch the demo</a>
+  <a href="assets/demo.mp4"><img src="https://img.shields.io/badge/▶️_Watch-Demo-FF0000?style=for-the-badge" alt="Watch the demo"></a>
 </p>
 
 No browser tab. No copy-paste into a translator and back. No app allow-list. Type your message anywhere — Slack, email, a game chat, a form — press your hotkey (**Ctrl+Shift+Z** by default, fully remappable), and it's translated right there in the same box. Your clipboard is untouched afterward.

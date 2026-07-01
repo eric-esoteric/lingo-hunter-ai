@@ -1,5 +1,7 @@
 <p align="right">
-  <a href="README.md"><b>🇬🇧 Read in English</b></a>
+  <a href="README.md"><img src="https://img.shields.io/badge/EN-English-0078D4?style=for-the-badge" alt="English"></a>
+  &nbsp;
+  <a href="README.ru.md"><img src="https://img.shields.io/badge/RU-Русский-CC0000?style=for-the-badge" alt="Русский"></a>
 </p>
 
 <h1 align="center">
@@ -10,7 +12,7 @@
 <p align="center"><b>Печатайте на любом языке. Нажмите горячую клавишу. Перевод готов — прямо на месте, мгновенно.</b></p>
 
 <p align="center">
-  <a href="assets/demo.mov">🎥 Смотреть демо</a>
+  <a href="assets/demo.mp4"><img src="https://img.shields.io/badge/▶️_Смотреть-Демо-FF0000?style=for-the-badge" alt="Смотреть демо"></a>
 </p>
 
 Никаких вкладок браузера. Никакого копирования в переводчик и обратно. Никаких ограничений по приложениям. Печатайте сообщение где угодно — в Slack, почте, чате игры, любой форме — нажмите свою горячую клавишу (по умолчанию **Ctrl+Shift+Z**, полностью настраивается), и перевод появится прямо в том же поле. Буфер обмена останется нетронутым.
