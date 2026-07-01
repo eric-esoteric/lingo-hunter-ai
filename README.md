@@ -13,7 +13,7 @@
 
 <p align="center">
 <details>
-<summary><img src="https://img.shields.io/badge/▶️_Watch-Demo-FF0000?style=for-the-badge" alt="Watch the demo"></summary>
+<summary><b>▶️ Watch the demo</b></summary>
 <br>
 
 https://github.com/user-attachments/assets/ca662a98-2d5f-4217-9d0c-c2061325597e
