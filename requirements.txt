@@ -1,0 +1,6 @@
+customtkinter
+Pillow
+plyer
+pynput
+pystray
+pyperclip

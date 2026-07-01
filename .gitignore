@@ -1,0 +1,47 @@
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# ── Virtual environments ─────────────────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+
+# ── PyInstaller build artifacts (build_exe.py / build_linux.py) ─────────
+build/
+dist/
+dist_output/
+*.spec
+_internal/
+
+# ── Packaged app output (dropped in repo root by build_exe.py/installer) ─
+*.exe
+LingoHunterAI_Setup.exe
+Lingo Hunter AI/
+
+# ── Inno Setup ────────────────────────────────────────────────────────────
+Output/
+*.isu
+
+# ── App runtime data (actually stored in %APPDATA%, ignored here as a
+# safety net in case anything ever gets generated inside the repo) ───────
+config.json
+*.log
+
+# ── Editors / IDEs ────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── OS junk ────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Misc local scratch ────────────────────────────────────────────────────
+*.tmp
+*.bak
