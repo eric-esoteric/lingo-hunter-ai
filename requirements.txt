@@ -4,3 +4,4 @@ plyer
 pynput
 pystray
 pyperclip
+win10toast; sys_platform == "win32"

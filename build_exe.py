@@ -152,7 +152,7 @@ def install_and_compile():
     subprocess.run([
         sys.executable, "-m", "pip", "install", "--upgrade",
         "pyinstaller", "customtkinter", "pillow", "plyer",
-        "pynput", "pystray", "pyperclip",
+        "pynput", "pystray", "pyperclip", "win10toast",
     ], check=True)
 
     print("\n[2/4] Locating CustomTkinter assets...")
