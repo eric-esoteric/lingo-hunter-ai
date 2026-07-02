@@ -15,7 +15,6 @@ _notification_lock = threading.Lock()   # guards _toast_ref mutations from concu
 _W_LOG      = 430     # toast width
 _H_LOG      = 116     # toast height
 _MARGIN_LOG = 8        # margin from screen edge
-_TASKBAR_LOG = 42      # reserve above the taskbar (~typical taskbar height)
 _LIFT_LOG   = 72       # how far below the final position the animation starts
 _BAR_LOG    = 4        # width of the colored left accent bar
 _PAD_X_LOG  = 16       # horizontal content padding
@@ -172,7 +171,6 @@ def _build_toast_safe(root, message: str, is_error: bool = False, on_click=None)
     W      = int(_W_LOG      * sc)
     H      = int(_H_LOG      * sc)
     MARGIN = int(_MARGIN_LOG * sc)
-    TBR    = int(_TASKBAR_LOG * sc)
     LIFT   = int(_LIFT_LOG   * sc)
     BAR    = int(_BAR_LOG    * sc)
     PX     = int(_PAD_X_LOG  * sc)
