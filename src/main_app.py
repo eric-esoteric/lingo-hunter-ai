@@ -183,6 +183,7 @@ PROVIDER_KEY_HELP = {
     "OpenAI": ("OpenAI Platform", "https://platform.openai.com/api-keys"),
     "Anthropic": ("Anthropic Console", "https://console.anthropic.com/settings/keys"),
     "DeepSeek": ("DeepSeek Platform", "https://platform.deepseek.com/api_keys"),
+    "OpenRouter": ("OpenRouter", "https://openrouter.ai/keys"),
 }
 PROVIDER_LOCAL_HELP = {
     "Ollama": ("Ollama", "https://ollama.com/download"),

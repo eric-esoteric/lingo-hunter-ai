@@ -101,12 +101,33 @@ ALL_PROVIDERS_MODELS = {
         "deepseek-v4-flash",       # fast/cheap tier — replaces deprecated deepseek-chat
         "deepseek-v4-pro",         # replaces deprecated deepseek-reasoner
     ],
+    # OpenRouter is a single API that fronts hundreds of third-party-hosted
+    # models, including community fine-tunes explicitly built without the
+    # safety alignment baked into the flagship providers above (the
+    # Cognitive Computations "Dolphin" line is the best-known family of
+    # these — trained specifically to drop refusal behavior; OpenRouter's
+    # own listings for them say outright "uncensored ... stripped of
+    # alignment and bias"). Listed here as an option for text that keeps
+    # getting refused/blocked by Gemini/OpenAI/Anthropic/DeepSeek's own
+    # policy tuning even with expressive mode + relaxed Gemini thresholds —
+    # this is the actual lever for that, since none of the other cloud
+    # providers expose a way to turn their own alignment off. Free tier
+    # first (good enough for short translation snippets), then the paid
+    # tier of the same model (higher rate limits/less queueing), then a
+    # couple of older but still-uncensored Dolphin fine-tunes as further
+    # failover options.
+    "OpenRouter": [
+        "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
+        "cognitivecomputations/dolphin-mistral-24b-venice-edition",
+        "cognitivecomputations/dolphin3.0-mistral-24b",
+        "cognitivecomputations/dolphin-llama-3-70b",
+    ],
     "Ollama": ["local-model"],
     "LM Studio": ["local-model"],
 }
 
 LOCAL_PROVIDERS = ("Ollama", "LM Studio")
-PROVIDER_ORDER = ["Gemini", "OpenAI", "Anthropic", "DeepSeek", "Ollama", "LM Studio"]
+PROVIDER_ORDER = ["Gemini", "OpenAI", "Anthropic", "DeepSeek", "OpenRouter", "Ollama", "LM Studio"]
 
 # ─────────────────────────── translation style / mode ───────────────────────
 #
@@ -130,21 +151,27 @@ TRANSLATION_MODE_LABELS = {
 # Gemini's API blocks a candidate response server-side when its own safety
 # classifier trips on a category, independent of anything in the system
 # prompt — this is what was producing "empty response" / hard errors on
-# ordinary profanity ("motherfucker" and the like) even though the prompt
-# already told the model to translate it faithfully. `safetySettings` is a
+# ordinary profanity ("motherfucker" and the like) as well as ordinary crude
+# or explicit adult language/fetish content even though the prompt already
+# told the model to translate it faithfully. `safetySettings` is a
 # documented, official generateContent parameter for exactly this: apps with
 # a legitimate reason to receive mature/crude language (fiction, moderation
 # tooling, a literal translator) can raise the block threshold instead of
-# hitting a wall on ordinary vulgar language.
+# hitting a wall on ordinary vulgar or explicit-but-not-hateful language.
 # https://ai.google.dev/gemini-api/docs/safety-settings
 #
 # Deliberately narrow: only HARASSMENT and SEXUALLY_EXPLICIT (the two
-# categories ordinary swearing/crude language actually trips) are relaxed,
-# and only to BLOCK_ONLY_HIGH — not BLOCK_NONE. HATE_SPEECH and
-# DANGEROUS_CONTENT are left at Gemini's own default threshold untouched.
+# categories ordinary swearing/crude/explicit language actually trips) are
+# relaxed, and relaxed all the way to BLOCK_NONE in Expressive mode — the
+# whole point of that mode is faithfully translating exactly this register
+# instead of having it silently eaten by an overzealous classifier.
+# HATE_SPEECH and DANGEROUS_CONTENT are deliberately left at Gemini's own
+# default threshold, untouched, in both modes — this relaxation is scoped to
+# crude/explicit language, not slurs, harassment targeting a person, or
+# glorification of violence/extremism.
 GEMINI_EXPRESSIVE_SAFETY_SETTINGS = [
-    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_ONLY_HIGH"},
+    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
 ]
 
 # Short, user-facing labels for Gemini's HARM_CATEGORY_* names — used to tell
@@ -575,6 +602,36 @@ class DeepSeekProvider(BaseProvider):
             raise AIResponseParseError(f"DeepSeek response parse error: {e}", "Could not parse DeepSeek's response.")
 
 
+class OpenRouterProvider(BaseProvider):
+    """OpenAI-compatible chat-completions API that routes to whichever
+    underlying model the model_pool names (see the OpenRouter entry in
+    ALL_PROVIDERS_MODELS above for why this provider exists). HTTP-Referer/
+    X-Title are optional per OpenRouter's docs — included as generic,
+    non-identifying values purely so requests are attributable on
+    OpenRouter's own dashboard, not because the API requires them."""
+    def make_request(self, model_name, contents, system_instruction):
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        payload = {
+            "model": model_name,
+            "messages": [
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": contents},
+            ],
+            "temperature": 0.1,
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}",
+            "HTTP-Referer": "https://github.com/lingo-hunter-ai",
+            "X-Title": "Lingo Hunter AI",
+        }
+        data = _post_json(url, payload, headers, self.request_timeout)
+        try:
+            return data["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError) as e:
+            raise AIResponseParseError(f"OpenRouter response parse error: {e}", "Could not parse OpenRouter's response.")
+
+
 class OllamaProvider(BaseProvider):
     is_local = True
     request_timeout = 120
@@ -658,6 +715,8 @@ def get_provider(provider_name: str, api_key: str, model_pool, base_url=None) ->
         return AnthropicProvider(api_key, model_pool)
     if provider_name == "DeepSeek":
         return DeepSeekProvider(api_key, model_pool)
+    if provider_name == "OpenRouter":
+        return OpenRouterProvider(api_key, model_pool)
     if provider_name == "Ollama":
         return OllamaProvider(api_key, model_pool, base_url)
     if provider_name == "LM Studio":

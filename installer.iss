@@ -2,7 +2,7 @@
 ; Uses relative paths so the project folder can be moved freely.
 
 #define MyAppName "Lingo Hunter AI"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Lingo Hunter AI"
 #define MyAppExeName "Lingo Hunter AI.exe"
 #define MyProjectDir "."
