@@ -31,7 +31,7 @@ https://github.com/user-attachments/assets/ca662a98-2d5f-4217-9d0c-c2061325597e
 
 You're mid-message. A Slack DM to a client, a comment on a job board, a line in a game's team chat, a form field that only takes one language. Right now that means: select the text, alt-tab to a browser, find the translator tab, paste, wait, copy the result, alt-tab back, paste over what you wrote, hope the formatting survived. By the time you're done, the conversation has moved on.
 
-Lingo Hunter AI skips all of that. Type your message anywhere, press a hotkey, and the text in the field you're already looking at turns into your target language — no tab switching, no clipboard juggling, no "wait, which window was I in."
+Lingo Hunter AI skips all of that. Just type your message anywhere and hit a hotkey — no selecting, no mouse. It grabs what you typed, translates it, and pastes it straight back into the same field, in your target language. No tab switching, no clipboard juggling, no "wait, which window was I in."
 
 <p align="center">
   <img src="assets/main menu.png" width="45%" alt="Lingo Hunter AI main window">
@@ -42,18 +42,19 @@ Lingo Hunter AI skips all of that. Type your message anywhere, press a hotkey, a
 
 | Without Lingo Hunter AI | With Lingo Hunter AI |
 |---|---|
-| Select your text | Select your text |
+| Select your text | Type your message |
 | Copy it | Press **Ctrl+Shift+Z** |
-| Switch to a browser tab | *(that's it)* |
+| Switch to a browser tab | *(that's it — no selecting, no mouse)* |
 | Paste into a translator |  |
 | Wait, then copy the result |  |
 | Switch back and paste it in, hoping formatting held |  |
 | Clean up whatever the clipboard did to your original text |  |
 
-One step instead of six, and your clipboard is exactly what it was before you started.
+One step instead of six — no selecting, no mouse, and your clipboard is exactly what it was before you started.
 
 ## Why it's different
 
+- **No selecting, no mouse.** Type your message, hit the hotkey. Lingo Hunter AI grabs everything in the active field, translates it, and pastes it back in place — the whole thing is a keyboard-only reflex, faster than reaching for your mouse.
 - **Works everywhere.** Any focused text field, in any app — Slack, email, a game's chat box, a support widget, a web form. No allow-list, no integrations to configure.
 - **Never goes down.** Five cloud AI providers (Gemini, OpenAI, Anthropic, DeepSeek, OpenRouter) plus local models (Ollama, LM Studio), with automatic failover across whichever models you've selected. If one is slow, blocked, or out of quota, the next one picks up the sentence without you noticing.
 - **Says what you actually meant.** Most translation tools quietly sand down tone, slang, and swearing into something safe and corporate. "Expressive" mode translates it as-is — including the parts a polite AI would normally soften. Prefer the safer default instead? Switch to "Standard" any time.
@@ -64,8 +65,8 @@ One step instead of six, and your clipboard is exactly what it was before you st
 ## How it works
 
 1. **Type** your message normally, in whatever app you're already using.
-2. **Select the text** and hit your hotkey (**Ctrl+Shift+Z** by default — remap it to anything).
-3. **Send it.** The field now holds the translation, in place, ready to go.
+2. **Hit your hotkey** (**Ctrl+Shift+Z** by default — remap it to anything). No selecting, no mouse.
+3. **Send it.** The field already holds the translation, in place, ready to go.
 
 ## Quick start
 
