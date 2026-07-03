@@ -12,6 +12,12 @@
 <p align="center"><b>Type in any language. Hit a hotkey. It's translated — in place, instantly.</b></p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-4C1D95?style=flat-square" alt="Platform">
+  <img src="https://img.shields.io/badge/AI%20providers-5%20cloud%20%2B%202%20local-0EA5E9?style=flat-square" alt="AI providers">
+  <img src="https://img.shields.io/badge/license-non--commercial-CC0000?style=flat-square" alt="License">
+</p>
+
+<p align="center">
 <details>
 <summary><b>▶️ Watch the demo</b></summary>
 <br>
@@ -21,20 +27,45 @@ https://github.com/user-attachments/assets/ca662a98-2d5f-4217-9d0c-c2061325597e
 </details>
 </p>
 
-No browser tab. No copy-paste into a translator and back. No app allow-list. Type your message anywhere — Slack, email, a game chat, a form — press your hotkey (**Ctrl+Shift+Z** by default, fully remappable), and it's translated right there in the same box. Your clipboard is untouched afterward.
+---
+
+You're mid-message. A Slack DM to a client, a comment on a job board, a line in a game's team chat, a form field that only takes one language. Right now that means: select the text, alt-tab to a browser, find the translator tab, paste, wait, copy the result, alt-tab back, paste over what you wrote, hope the formatting survived. By the time you're done, the conversation has moved on.
+
+Lingo Hunter AI skips all of that. Type your message anywhere, press a hotkey, and the text in the field you're already looking at turns into your target language — no tab switching, no clipboard juggling, no "wait, which window was I in."
 
 <p align="center">
   <img src="assets/main menu.png" width="45%" alt="Lingo Hunter AI main window">
   <img src="assets/settings.png" width="45%" alt="Lingo Hunter AI settings panel">
 </p>
 
+## The old way vs. this way
+
+| Without Lingo Hunter AI | With Lingo Hunter AI |
+|---|---|
+| Select your text | Select your text |
+| Copy it | Press **Ctrl+Shift+Z** |
+| Switch to a browser tab | *(that's it)* |
+| Paste into a translator |  |
+| Wait, then copy the result |  |
+| Switch back and paste it in, hoping formatting held |  |
+| Clean up whatever the clipboard did to your original text |  |
+
+One step instead of six, and your clipboard is exactly what it was before you started.
+
 ## Why it's different
 
-- **Works everywhere** — any focused text field, any app, no restrictions.
-- **Never goes down** — five AI providers (Gemini, OpenAI, Anthropic, DeepSeek, OpenRouter) plus local models (Ollama, LM Studio), with automatic failover across your selected models if one is slow, blocked, or unavailable.
-- **Says what you meant** — an "Expressive" translation style translates tone, slang, emoji, and profanity as-is instead of the AI provider's usual corporate-safe softening; switch to "Standard" if you'd rather have the conservative default.
-- **Simple by default, deep when you want it** — target language (with starrable favorites for quick switching), hotkey, AI provider, and per-provider model failover order are all one panel away, with two built-in themes (Calm Dark, Cyberpunk).
-- **Lives in your tray** — closes to the background, one click to bring it back; optional "Start with Windows" launches straight into the tray.
+- **Works everywhere.** Any focused text field, in any app — Slack, email, a game's chat box, a support widget, a web form. No allow-list, no integrations to configure.
+- **Never goes down.** Five cloud AI providers (Gemini, OpenAI, Anthropic, DeepSeek, OpenRouter) plus local models (Ollama, LM Studio), with automatic failover across whichever models you've selected. If one is slow, blocked, or out of quota, the next one picks up the sentence without you noticing.
+- **Says what you actually meant.** Most translation tools quietly sand down tone, slang, and swearing into something safe and corporate. "Expressive" mode translates it as-is — including the parts a polite AI would normally soften. Prefer the safer default instead? Switch to "Standard" any time.
+- **Your keys, your traffic.** Bring your own API key and Lingo Hunter AI talks straight to the provider you picked — there's no middleman server relaying or logging your messages.
+- **Simple by default, deep when you want it.** Target language (star your favorites for one-click switching), hotkey, AI provider, and per-provider model failover order all live in one settings panel. Two built-in themes — Calm Dark and Cyberpunk — if you're going to stare at it all day, it should at least look good.
+- **Lives in your tray, not in your way.** Closes to the background, one click to bring it back. Turn on "Start with Windows" and it's already waiting in the tray before you sit down.
+
+## How it works
+
+1. **Type** your message normally, in whatever app you're already using.
+2. **Select the text** and hit your hotkey (**Ctrl+Shift+Z** by default — remap it to anything).
+3. **Send it.** The field now holds the translation, in place, ready to go.
 
 ## Quick start
 
