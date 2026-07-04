@@ -7,18 +7,16 @@
 # small callback interface passed into TrayMenuController, so it never
 # imports main_app.py (no circular import) and never touches Tkinter.
 #
-# Two features live here:
-#   1. Quick-switch — a "Target language" submenu on the tray icon that lets
-#      the user change the translation target without opening the main
-#      window.
-#   2. Favorites pinning — starred languages (see lh_storage_manager's
-#      favorite_languages helpers) are always rendered last in that submenu,
-#      separated from the rest, so the user's most-used languages sit
-#      closest to the tray icon itself (which lives at the bottom of the
-#      screen) instead of at the top of a potentially long list — less
-#      mouse travel to reach the languages actually used most. Within that
-#      block they keep their normal starred order (oldest-starred first),
-#      unaffected by the reordering of the section as a whole.
+# The quick-switch feature lives here: a "Target language (…)" item on the
+# tray icon that lets the user change the translation target without opening
+# the main window. Since v3 it is a single native menu item that opens the
+# custom, theme-styled scrollable picker from lh_language_selector.py —
+# favorites pinned at its top, the full ~115-language catalog below, per-row
+# star toggles. The old *native* submenu of favorites is gone on purpose:
+# a native OS-styled submenu sitting next to the custom-styled picker looked
+# like two different apps (and the full list used to climb off the top of
+# the screen as a native menu). The native submenu remains only as a
+# fallback for callers that don't wire up on_open_selector.
 #
 # A note on "theming" a native tray menu: pystray delegates the actual menu
 # rendering to the OS (Windows' native popup menu, macOS' NSMenu, or
@@ -53,10 +51,27 @@ except Exception:  # pragma: no cover - depends on optional system package
 # passes its own COMMON_LANGUAGES in via TrayMenuController(languages=...),
 # so this list is only ever the fallback.
 DEFAULT_LANGUAGES = [
-    "English", "Spanish", "French", "German", "Italian", "Portuguese",
-    "Russian", "Ukrainian", "Polish", "Turkish", "Arabic", "Hindi",
-    "Chinese (Simplified)", "Japanese", "Korean", "Vietnamese", "Dutch",
-    "Swedish", "Greek", "Hebrew", "Indonesian", "Thai",
+    "Afrikaans", "Albanian", "Amharic", "Arabic", "Armenian", "Assamese",
+    "Azerbaijani", "Bashkir", "Basque", "Belarusian", "Bengali", "Bosnian",
+    "Bulgarian", "Burmese", "Catalan", "Cebuano", "Chechen",
+    "Chinese (Simplified)", "Chinese (Traditional)", "Chuvash", "Croatian",
+    "Czech", "Danish", "Dari", "Dutch", "English", "Esperanto", "Estonian",
+    "Filipino (Tagalog)", "Finnish", "French", "Galician", "Georgian",
+    "German", "Greek", "Gujarati", "Haitian Creole", "Hausa", "Hebrew",
+    "Hindi", "Hmong", "Hungarian", "Icelandic", "Igbo", "Indonesian",
+    "Irish", "Italian", "Japanese", "Javanese", "Kannada", "Kazakh",
+    "Khmer", "Kinyarwanda", "Korean", "Kurdish (Kurmanji)",
+    "Kurdish (Sorani)", "Kyrgyz", "Lao", "Latin", "Latvian", "Lithuanian",
+    "Luxembourgish", "Macedonian", "Malagasy", "Malay", "Malayalam",
+    "Maltese", "Maori", "Marathi", "Mongolian", "Nepali", "Norwegian",
+    "Odia", "Oromo", "Ossetian", "Pashto", "Persian (Farsi)", "Polish",
+    "Portuguese", "Portuguese (Brazilian)", "Punjabi", "Quechua",
+    "Romanian", "Russian", "Scottish Gaelic", "Serbian", "Shona", "Sindhi",
+    "Sinhala", "Slovak", "Slovenian", "Somali", "Spanish", "Sundanese",
+    "Swahili", "Swedish", "Tajik", "Tamil", "Tatar", "Telugu", "Thai",
+    "Tibetan", "Tigrinya", "Turkish", "Turkmen", "Ukrainian", "Urdu",
+    "Uyghur", "Uzbek", "Vietnamese", "Welsh", "Xhosa", "Yiddish", "Yoruba",
+    "Zulu",
 ]
 
 STAR = "★"  # prefix marking a pinned/favorite language in the tray menu
@@ -106,10 +121,18 @@ class TrayMenuController:
                                         get_config()).
       on_open()                        fired when "Open" is clicked
       on_exit()                        fired when "Exit" is clicked
+      on_open_selector()               fired when "Select language…" is
+                                        clicked; the caller must marshal to
+                                        the Tk main thread (e.g. via
+                                        app.after) and open the scrollable
+                                        picker from lh_language_selector.py.
+                                        Optional — if not provided, the item
+                                        simply isn't shown.
     """
 
     def __init__(self, app_name, icon_path, get_config, get_theme,
-                 on_select_language, on_open, on_exit, languages=None):
+                 on_select_language, on_open, on_exit, languages=None,
+                 on_open_selector=None):
         self.app_name = app_name
         self.icon_path = icon_path
         self._get_config = get_config
@@ -117,37 +140,31 @@ class TrayMenuController:
         self._on_select_language = on_select_language
         self._on_open = on_open
         self._on_exit = on_exit
+        self._on_open_selector = on_open_selector
         self.languages = list(languages) if languages else list(DEFAULT_LANGUAGES)
         self._icon = None
 
     # ── menu construction ───────────────────────────────────────────────
 
     def _ordered_languages(self, config: dict):
-        """Splits the language list into (favorites, others):
-          - favorites: the user's starred languages, in their saved order,
-            always shown even if they aren't in `self.languages` (e.g. a
-            custom, freeform target language the user typed once and
-            starred).
-          - others: everything else, alphabetical, minus whatever is
-            already pinned as a favorite.
-        The currently active target language is guaranteed to appear
-        somewhere in one of the two lists, even if it's a one-off custom
-        value, so its checkmark is always visible.
+        """Returns (favorites, extras) for the tray submenu.
+
+        favorites: the user's starred languages, in their saved order,
+          always shown even if they aren't in `self.languages` (e.g. a
+          custom, freeform target language the user typed once and starred).
+        extras: at most one entry — the currently active target language
+          when it is NOT starred, so its radio checkmark always has
+          somewhere to appear. The rest of the ~115-language catalog is
+          deliberately NOT menu-listed anymore; it lives behind the
+          "Select language…" picker (lh_language_selector.py) instead of
+          scrolling off the top of the screen as a native menu.
         """
         favorites = lh_storage_manager.get_favorite_languages(config)
         fav_keys = {f.strip().lower() for f in favorites}
 
         current = (config.get("target_language") or "").strip()
-
-        pool = list(self.languages)
-        if current and current.lower() not in {p.lower() for p in pool}:
-            pool.append(current)
-
-        others = sorted(
-            (lang for lang in pool if lang.strip().lower() not in fav_keys),
-            key=str.lower,
-        )
-        return favorites, others
+        extras = [current] if current and current.lower() not in fav_keys else []
+        return favorites, extras
 
     def _make_language_item(self, language: str, current: str, starred: bool):
         label = f"{STAR} {language}" if starred else language
@@ -170,27 +187,37 @@ class TrayMenuController:
             self.rebuild()
         return _handler
 
+    def _make_selector_handler(self):
+        """Fires the "Select language…" callback. Runs on the pystray
+        backend thread — the callback itself is responsible for hopping to
+        the Tk main thread before touching any widgets."""
+        def _handler():
+            if self._on_open_selector:
+                self._on_open_selector()
+        return _handler
+
     def build_menu(self):
         """Builds a fresh pystray.Menu from the current config/theme. Called
         both on first start() and every time rebuild() is invoked (language
         change, favorites change, theme change)."""
         config = self._get_config() or {}
         current = (config.get("target_language") or "").strip()
-        favorites, others = self._ordered_languages(config)
 
-        # Others (alphabetical) first, favorites last: a native tray/context
-        # menu opens anchored to the tray icon, which sits at the bottom of
-        # the screen, so items nearer the *end* of the list are physically
-        # closer to the cursor when the menu pops open. Putting the starred
-        # languages there means less reaching for the ones actually used
-        # most, while the block itself still reads top-to-bottom starting
-        # with the first-starred favorite, same as before.
-        lang_items = [self._make_language_item(l, current, starred=False) for l in others]
-        if favorites and others:
-            lang_items.append(Menu.SEPARATOR)
-        lang_items.extend(self._make_language_item(l, current, starred=True) for l in favorites)
-
-        language_menu = MenuItem("Target language", Menu(*lang_items))
+        if self._on_open_selector:
+            # One native item, showing the current target for at-a-glance
+            # feedback; clicking it opens the custom themed picker
+            # (favorites pinned at its top) right at the cursor. No native
+            # favorites submenu anymore — see module docstring.
+            label = f"Target language ({current})" if current else "Target language…"
+            language_menu = MenuItem(label, self._make_selector_handler())
+        else:
+            # Fallback for callers without a selector: the old native
+            # submenu — favorites last (closest to the tray icon at the
+            # bottom of the screen), plus the unstarred current language.
+            favorites, extras = self._ordered_languages(config)
+            lang_items = [self._make_language_item(l, current, starred=False) for l in extras]
+            lang_items.extend(self._make_language_item(l, current, starred=True) for l in favorites)
+            language_menu = MenuItem("Target language", Menu(*lang_items))
 
         return Menu(
             MenuItem("Open", self._on_open, default=True),

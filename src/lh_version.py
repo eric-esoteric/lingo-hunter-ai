@@ -3,4 +3,4 @@
 # (without importing it, to avoid pulling in GUI deps during the build step).
 
 APP_NAME = "Lingo Hunter AI"
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.2.0"

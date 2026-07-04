@@ -1,6 +1,6 @@
 NON-COMMERCIAL LICENSE AGREEMENT
 Lingo Hunter AI — Software License
-Version 1.0.0
+Version 1.2.0
 
 ================================================================================
 

@@ -30,6 +30,7 @@ import lh_ai_engine
 import lh_automation
 import lh_notifications
 import lh_tray_menu
+import lh_language_selector
 import lh_autostart
 
 _log = lh_logging.get_logger(__name__)
@@ -168,11 +169,33 @@ def _font(theme: dict, size: int, weight: str = None):
     family = theme.get("font_family", "Segoe UI")
     return (family, size, weight) if weight else (family, size)
 
+# Comprehensive target-language list — roughly Google Translate's coverage:
+# every language with a significant speaker population or an established
+# written standard, excluding only truly obscure ones. Kept alphabetical so
+# the scrollable selector (lh_language_selector.py) reads naturally; the UI
+# never depends on this ordering beyond display.
 COMMON_LANGUAGES = [
-    "English", "Spanish", "French", "German", "Italian", "Portuguese",
-    "Russian", "Ukrainian", "Polish", "Turkish", "Arabic", "Hindi",
-    "Chinese (Simplified)", "Japanese", "Korean", "Vietnamese", "Dutch",
-    "Swedish", "Greek", "Hebrew", "Indonesian", "Thai",
+    "Afrikaans", "Albanian", "Amharic", "Arabic", "Armenian", "Assamese",
+    "Azerbaijani", "Bashkir", "Basque", "Belarusian", "Bengali", "Bosnian",
+    "Bulgarian", "Burmese", "Catalan", "Cebuano", "Chechen",
+    "Chinese (Simplified)", "Chinese (Traditional)", "Chuvash", "Croatian",
+    "Czech", "Danish", "Dari", "Dutch", "English", "Esperanto", "Estonian",
+    "Filipino (Tagalog)", "Finnish", "French", "Galician", "Georgian",
+    "German", "Greek", "Gujarati", "Haitian Creole", "Hausa", "Hebrew",
+    "Hindi", "Hmong", "Hungarian", "Icelandic", "Igbo", "Indonesian",
+    "Irish", "Italian", "Japanese", "Javanese", "Kannada", "Kazakh",
+    "Khmer", "Kinyarwanda", "Korean", "Kurdish (Kurmanji)",
+    "Kurdish (Sorani)", "Kyrgyz", "Lao", "Latin", "Latvian", "Lithuanian",
+    "Luxembourgish", "Macedonian", "Malagasy", "Malay", "Malayalam",
+    "Maltese", "Maori", "Marathi", "Mongolian", "Nepali", "Norwegian",
+    "Odia", "Oromo", "Ossetian", "Pashto", "Persian (Farsi)", "Polish",
+    "Portuguese", "Portuguese (Brazilian)", "Punjabi", "Quechua",
+    "Romanian", "Russian", "Scottish Gaelic", "Serbian", "Shona", "Sindhi",
+    "Sinhala", "Slovak", "Slovenian", "Somali", "Spanish", "Sundanese",
+    "Swahili", "Swedish", "Tajik", "Tamil", "Tatar", "Telugu", "Thai",
+    "Tibetan", "Tigrinya", "Turkish", "Turkmen", "Ukrainian", "Urdu",
+    "Uyghur", "Uzbek", "Vietnamese", "Welsh", "Xhosa", "Yiddish", "Yoruba",
+    "Zulu",
 ]
 
 # Where to point users for each provider's API key page (or, for local
@@ -919,12 +942,27 @@ class LingoHunterApp(ctk.CTk):
         lang_card = _card(left)
         _card_header(lang_card, "Target language")
 
+        # Entry + "▾" picker button instead of the old CTkComboBox: with
+        # ~115 languages the combo's native dropdown menu becomes one giant
+        # screen-height column (the same overflow problem the tray had), so
+        # the arrow now opens the shared scrollable selector popup
+        # (lh_language_selector.py, ≤20 rows + wheel scroll + star toggles)
+        # while the entry itself still allows typing a custom, freeform
+        # target language — a capability the editable combo used to provide.
         lang_var = ctk.StringVar(value=self.app_config.get("target_language", "English"))
-        lang_combo = _register(
-            ctk.CTkComboBox(lang_card, values=COMMON_LANGUAGES, variable=lang_var),
-            fg_color="input_bg", button_color="accent", dropdown_fg_color="input_bg",
+        lang_row = ctk.CTkFrame(lang_card, fg_color="transparent")
+        lang_row.pack(fill="x", pady=(0, ROW_GAP))
+        lang_entry = _register(
+            ctk.CTkEntry(lang_row, textvariable=lang_var),
+            fg_color="input_bg", text_color="text", border_color="accent",
         )
-        lang_combo.pack(fill="x", pady=(0, ROW_GAP))
+        lang_entry.pack(side="left", fill="x", expand=True)
+        lang_pick_btn = _register(
+            ctk.CTkButton(lang_row, text="▾", width=36,
+                          command=lambda: _open_language_picker()),
+            fg_color="accent", hover_color="gold", text_color="#0B0E14",
+        )
+        lang_pick_btn.pack(side="left", padx=(6, 0))
 
         # ── Favorites ("starring") — grouped directly under the language
         # combo so starred languages sit visually adjacent to the primary
@@ -1054,6 +1092,33 @@ class LingoHunterApp(ctk.CTk):
                 self._persist_config()
             _rebuild_favorite_chips()
             _notify_tray_favorites_changed()
+
+        def _toggle_favorite_from_picker(lang):
+            """Star toggled inside the selector popup — persist immediately
+            (same no-Save-needed behavior as the star button above) and
+            refresh both the chips row and the tray's pinned list."""
+            with self._config_lock:
+                now_fav = lh_storage_manager.toggle_favorite_language(self.app_config, lang)
+                self._persist_config()
+            _rebuild_favorite_chips()
+            _notify_tray_favorites_changed()
+            return now_fav
+
+        def _open_language_picker():
+            anchor = (
+                lang_entry.winfo_rootx(),
+                lang_entry.winfo_rooty() + lang_entry.winfo_height() + 2,
+            )
+            lh_language_selector.open_language_selector(
+                master=win,
+                theme=self.theme,
+                languages=COMMON_LANGUAGES,
+                current=lang_var.get(),
+                favorites=lh_storage_manager.get_favorite_languages(self.app_config),
+                on_select=lambda l: lang_var.set(l),
+                on_toggle_favorite=_toggle_favorite_from_picker,
+                anchor=anchor,
+            )
 
         lang_var.trace_add("write", lambda *_: _refresh_star_button())
         _rebuild_favorite_chips()
@@ -1446,12 +1511,48 @@ class LingoHunterApp(ctk.CTk):
                 on_open=lambda: self.after(0, self._restore_from_tray),
                 on_exit=lambda: self.after(0, self._do_exit),
                 languages=COMMON_LANGUAGES,
+                # Fired from the tray's "Select language…" item on the
+                # pystray backend thread — hop to the Tk main thread before
+                # any widget work (same pattern as on_open/on_exit).
+                on_open_selector=lambda: self.after(0, self._open_tray_language_selector),
             )
 
         if not self._tray_controller.start():
             # No tray support installed — minimize behavior is lost; fall
             # back to actually closing rather than vanishing silently.
             self._do_exit()
+
+    def _open_tray_language_selector(self):
+        """Opens the scrollable full-catalog language picker anchored at the
+        mouse pointer (i.e. right where the tray menu was), extending upward
+        since the tray sits at the bottom of the screen. Runs on the Tk main
+        thread (marshaled via self.after from the tray callback)."""
+
+        def _picked(language):
+            # Same persistence path as a direct tray menu pick, plus a tray
+            # rebuild so the checkmark / unstarred-current entry updates.
+            self._set_target_language_from_tray(language)
+            if self._tray_controller is not None:
+                self._tray_controller.rebuild()
+
+        def _toggle_fav(language):
+            with self._config_lock:
+                now_fav = lh_storage_manager.toggle_favorite_language(self.app_config, language)
+                self._persist_config()
+            if self._tray_controller is not None:
+                self._tray_controller.rebuild()
+            return now_fav
+
+        lh_language_selector.open_language_selector(
+            master=self,
+            theme=self.theme,
+            languages=COMMON_LANGUAGES,
+            current=self.app_config.get("target_language", ""),
+            favorites=lh_storage_manager.get_favorite_languages(self.app_config),
+            on_select=_picked,
+            on_toggle_favorite=_toggle_fav,
+            prefer_above=True,
+        )
 
     def _set_target_language_from_tray(self, language: str):
         """Fired from the tray's "Target language" quick-switch. Runs on the
